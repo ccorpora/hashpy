@@ -1,0 +1,3 @@
+*.wp*
+__pycache__/*
+hashpy/__pycache__/*

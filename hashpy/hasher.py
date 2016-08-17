@@ -20,7 +20,10 @@ class HashRecord:
         self.error = error
         
     def add(self, hashes):
-        self.hashes.update(hashes)
+        """hashes are either a dict or a iterable of tuples"""
+        if not isinstance(hashes, dict):
+            hashes = dict(hashes)
+        self.hashes.update(dict(hashes))
         
     def get_hash(self, name):
         return self.hashes.get(name)
@@ -30,6 +33,18 @@ class HashRecord:
         tmp = [k for k in self.hashes]
         tmp.sort()
         return tuple(tmp)
+    
+    def __eq__(self, other):
+        common_algs = set(self.algorithms).intersection(set(other.algorithms))
+        if len(common_algs) > 1:
+            for alg in common_algs:
+                h = self.get_hash(alg)
+                oh = self.get_hash(alg)
+                if (h or oh) and (oh != h):
+                    return False
+            return True
+        else:
+            raise ValueError("No common algorithms used to compare")
                 
 class Hasher:
     """Object to hash files using multiple hash algorithms"""
