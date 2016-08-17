@@ -12,7 +12,7 @@ import os
 
 TEMP_DIRPATH = Path(tempfile.mkdtemp()).resolve()
         
-class TestMultiHasher(unittest.TestCase):
+class TestHasher(unittest.TestCase):
     def setUp(self):
         self.mhasher = Hasher('md5', 'sha1')
         self.shasher = Hasher()
