@@ -1,8 +1,7 @@
 import unittest
 import tempfile
 import os
-import hashpy
-from hashpy.hasher import Hasher, KB, MB, MAX_READ_SZ
+from hashpy import Hasher, KB, MB, MAX_READ_SZ
 import hashlib
 import random
 from pathlib import Path
@@ -11,7 +10,7 @@ import shutil
 import os
 
 TEMP_DIRPATH = Path(tempfile.mkdtemp()).resolve()
-        
+
 class TestHasher(unittest.TestCase):
     def setUp(self):
         self.mhasher = Hasher('md5', 'sha1')
@@ -69,6 +68,6 @@ class TestHasher(unittest.TestCase):
 class TestVerifier(unittest.TestCase):
     def setUp(self):
         pass
-        
-if __name__ == "__main__":
+    
+if __name__ == '__main__':
     unittest.main()
