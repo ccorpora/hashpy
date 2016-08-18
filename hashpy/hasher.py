@@ -6,7 +6,7 @@ MB = KB*KB
 GB = KB*MB
 TB = KB*GB
 
-ALG_NAMES = tuple(sorted(hashlib.algorithms_available, key=lambda x: x.lower()))
+ALG_NAMES = tuple(sorted(hashlib.algorithms_guaranteed))
 ALG_DEFAULTS = ('md5',)
 # if file size is <= MAX_READ_SZ bytes, if will be read at once,
 # otherwise the file will be read with multiple read calls
@@ -18,14 +18,17 @@ class HashRecord:
     def __init__(self, hashes=None, error=None):
         self.hashes = dict()
         if hashes:
-            self.add(hashes)
+            self.update_hashes(hashes)
         self.error = error
         
-    def add(self, hashes):
+    def update_hashes(self, hashes):
         """hashes are either a dict or a iterable of tuples"""
         if not isinstance(hashes, dict):
             hashes = dict(hashes)
-        self.hashes.update(dict(hashes))
+        for algname in hashes:
+            if algname not in ALG_NAMES:
+                raise ValueError('Unknown algorithm: {}'.format(algname))
+        self.hashes.update(hashes)
         
     def get_hash(self, name):
         return self.hashes.get(name)
@@ -55,27 +58,42 @@ class Hasher:
         if not algorithms:
             self.algorithms = ALG_DEFAULTS
         else:
-            tmp1 = []
+            self.algorithms = None
             for alg in algorithms:
-                if alg in ALG_NAMES:
-                    tmp1.append(alg)
-            # if none of the algorithms are available, raise a ValueError
-            if not tmp1:
-                s = ','.join(algorithms)
-                raise ValueError("{} hashes are unknown".format(alg))
-            tmp2 = []
-            for alg in tmp1:
-                if alg.lower() != alg and alg.lower() in tmp2:
-                    pass
-                else:
-                    tmp2.append(alg)
-            tmp2.sort()
-            self.algorithms = tuple(tmp2)
+                self.add_algorithm(alg)
         self.hashed = 0
         self.errors = 0
         self.files = 0
-        self.read_bytes = 0        
-            
+        self.read_bytes = 0
+        
+    def _normalize(self, algorithm):
+        """Normalize the given algorithm name to match list of algorithms"""
+        new = algorithm.lower().replace('-', '')
+        if new in ALG_NAMES:
+            return new
+        else:
+            raise ValueError('{} is not in algorithms used'.format(algorithm))
+        
+    def add_algorithm(self, algorithm):
+        """Updates self.algorithms with algorithm"""
+        if self.algorithms:
+            new = set(self.algorithms)
+        else:
+            new = set()
+        algorithm = self._normalize(algorithm)
+        new.add(algorithm)
+        self.algorithms = tuple(new)
+        
+    def remove_algorithm(self, algorithm):
+        """Removes algorithm from self.algorithms, if it is the only algorithm raises a ValueError"""
+        algorithm = self._normalize(algorithm)
+        if algorithm in self.algorithms:
+            if len(self.algorithms > 1):
+                new = list(algorithms)
+                new.remove(algorithm)
+            else:
+                raise ValueError("Hasher object needs at least one algorithm")
+    
     def _hash(self, fpath):
         """Return hashes of a file as a dict, keys are the algorithm"""
         with fpath.open('rb') as fin:
@@ -125,7 +143,7 @@ class Verifier(Hasher):
     HASH_READ_ERROR = -2
 
     def __init__(self, *algorithms):
-        super().__init__(*algorithm)
+        super().__init__(*algorithms)
         self.matching = 0
         self.non_matching = 0
         self.not_found = 0
@@ -134,7 +152,7 @@ class Verifier(Hasher):
         """Returns results of verification"""
         try:
             fpath = fpath.resolve()
-            new_hash = self.get_hash(fpath)
+            new_hr = self.hash_file(fpath)
         except FileNotFoundError:
             # count separately from other OSError exceptions
             self.not_found += 1
@@ -148,7 +166,7 @@ class Verifier(Hasher):
             self.files += 1
             self.hashed += 1
             # in case old hash is uppercase
-            if new_hash == old_hash.lower():
+            if new_hr == old_hr:
                 res = self.HASH_MATCH
                 self.matching += 1
             else:
