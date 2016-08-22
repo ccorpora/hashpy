@@ -1,2 +1,2 @@
 # hashpy
-Python package for hashing files and directories
+Python package for hashing files
