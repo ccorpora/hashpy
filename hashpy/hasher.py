@@ -65,7 +65,7 @@ class HashRecord:
     
     def to_base64(self, algname):
         """Returns a digest in base64 of the current state of the algorithm's hash object"""
-        return base64.b64encode(self._get_hashobj(algname).to_bytes())
+        return base64.b64encode(self.to_bytes(algname)).decode('ascii')
     
     @property    
     def algorithms(self):
