@@ -1,3 +1,5 @@
 *.wp*
 __pycache__/*
 hashpy/__pycache__/*
+.DS_Store
+hashpy/.DS_Store
