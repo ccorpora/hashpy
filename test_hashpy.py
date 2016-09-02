@@ -154,19 +154,23 @@ class TestHashRecord(unittest.TestCase):
         self.assertEqual(known_md5_bytes, hr.digest('md5'))
         self.assertEqual(known_md5_base64, hr.base64digest('md5'))
         
-    def testHashRecordEqual(self):
-        """Test HashRecord Equals"""
+    def testHashRecordEqualOneSame(self):
+        """Test HashRecord Equals with a single matching hash"""
         hr1 = HashRecord(('md5', 'sha1'), data=b'abc')
-        hr2 = HashRecord(('sha256', 'md5'))
-        hr2.update(b'abc')
+        hr2 = HashRecord(('sha256', 'md5'), data=b'abc')
         self.assertEqual(hr1, hr2)
         
-    def testHashRecordEqual(self):
+    def testHashRecordNotEqual(self):
         """Test HashRecord Equals"""
         hr1 = HashRecord(('md5', 'sha1'), data=b'abc')
-        hr2 = HashRecord(('sha1', 'md5'), data=b'abc')
-        hr2.update(b'abc')
+        hr2 = HashRecord(('md5', 'sha1'), data=b'123')
         self.assertNotEqual(hr1, hr2)
+        
+    def testHashRecordEqualTwoDifferent(self):
+        """Test HashRecord Not Equal"""
+        hr1 = HashRecord(('md5', 'sha1'), data=b'abc')
+        hr2 = HashRecord(('sha512', 'sha256'), data=b'abc')
+        self.assertNotEqual(hr1, hr2)    
 
 class TestVerifier(unittest.TestCase):
     
@@ -221,7 +225,8 @@ class TestVerifier(unittest.TestCase):
         self.assertEqual(verifier.files, 0)
         self.assertEqual(verifier.hashed, 0)
         self.assertEqual(verifier.matching, 0)
-        self.assertEqual(verifier.non_matching, 0) 
+        self.assertEqual(verifier.non_matching, 0)
+       
         
     
 if __name__ == '__main__':

@@ -65,7 +65,7 @@ class HashRecord:
     
     def __eq__(self, other):
         common_algs = self.algorithms.intersection(other.algorithms)
-        if len(common_algs) > 1:
+        if len(common_algs) > 0:
             for algname in common_algs:
                 h = self.hexdigest(algname)
                 oh = other.hexdigest(algname)
@@ -73,7 +73,8 @@ class HashRecord:
                     return False
             return True
         else:
-            return False
+            return False      
+        
 
 class Hasher:
     """Object to hash files using multiple hash algorithms"""
@@ -83,8 +84,8 @@ class Hasher:
             self.algorithms = ALG_DEFAULTS
         else:
             self.algorithms = None
-            for algname in algorithms:
-                self.add_algorithm(algname)
+            for i in algnames:
+                self.add_algorithm(i)
         self.hashed = 0
         self.errors = 0
         self.files = 0
