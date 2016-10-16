@@ -144,40 +144,6 @@ class Hasher:
             raise
         return hr
     
-class Verifier(Hasher):
-    """Verifies hashes from previously produced hashes"""     
-    
-    MATCH = 1
-    NO_MATCH = 0
-    FILE_NOT_FOUND = -1
-    READ_ERROR = -2
-
-    def __init__(self, *algorithms):
-        super().__init__(*algorithms)
-        self.matching = 0
-        self.non_matching = 0
-        self.not_found = 0
-
-    def verify(self, fpath, hr):
-        """Returns results of verification"""
-        try:
-            new_hr = self.hash_file(fpath)
-        except FileNotFoundError:
-            # count separately from other OSError exceptions
-            self.not_found += 1
-            res = self.FILE_NOT_FOUND
-        # all other errors when reading
-        except (IOError, OSError):
-            res = self.READ_ERROR
-        else:
-            if new_hr == hr:
-                res = self.MATCH
-                self.matching += 1
-            else:
-                res = self.NO_MATCH
-                self.non_matching += 1
-        return res
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('filepath')

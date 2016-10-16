@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import os
 import hashpy
-from hashpy import Hasher, HashRecord, Verifier, KB, MB, MAX_READ_SZ
+from hashpy import Hasher, HashRecord, KB, MB, MAX_READ_SZ
 import hashlib
 import random
 from pathlib import Path
@@ -170,64 +170,7 @@ class TestHashRecord(unittest.TestCase):
         """Test HashRecord Not Equal"""
         hr1 = HashRecord(('md5', 'sha1'), data=b'abc')
         hr2 = HashRecord(('sha512', 'sha256'), data=b'abc')
-        self.assertNotEqual(hr1, hr2)    
+        self.assertNotEqual(hr1, hr2)
 
-class TestVerifier(unittest.TestCase):
-    
-    def setUp(self):
-        self.test_fpath = TEMP_DIRPATH / 'testfile'   
-    
-    def verifyFileHelper(self, algnames, data):
-        hr = HashRecord(algnames, data=data)
-        with self.test_fpath.open('wb') as fout:
-            fout.write(data)
-        return hr
-    
-    def testVerifyMatch(self):
-        data = b'abc'
-        algnames = ('md5', 'sha1')
-        hr = self.verifyFileHelper(algnames, data)
-        verifier = Verifier(*algnames)
-        res = verifier.verify(self.test_fpath, hr)
-        self.test_fpath.unlink()
-        self.assertEqual(res, Verifier.MATCH)
-        self.assertEqual(verifier.errors, 0)
-        self.assertEqual(verifier.files, 1)
-        self.assertEqual(verifier.hashed, 1)
-        self.assertEqual(verifier.matching, 1)
-        self.assertEqual(verifier.non_matching, 0)
-        
-    def testVerifyNoMatch(self):
-        data = b'abc'
-        algnames = ('md5', 'sha1')
-        hr = self.verifyFileHelper(algnames, data)
-        with self.test_fpath.open('ab') as fout:
-            fout.write(b'123')
-        verifier = Verifier(*algnames)
-        res = verifier.verify(self.test_fpath, hr)
-        self.test_fpath.unlink()
-        self.assertEqual(res, Verifier.NO_MATCH)
-        self.assertEqual(verifier.errors, 0)
-        self.assertEqual(verifier.files, 1)
-        self.assertEqual(verifier.hashed, 1)
-        self.assertEqual(verifier.matching, 0)
-        self.assertEqual(verifier.non_matching, 1)        
-        
-    def testVerifyFileNotFound(self):
-        data = b'abc'
-        algnames = ('md5', 'sha1')
-        hr = self.verifyFileHelper(algnames, data)
-        self.test_fpath.unlink()
-        verifier = Verifier(*algnames)
-        res = verifier.verify(self.test_fpath, hr)
-        self.assertEqual(res, Verifier.FILE_NOT_FOUND)
-        self.assertEqual(verifier.errors, 0)
-        self.assertEqual(verifier.files, 0)
-        self.assertEqual(verifier.hashed, 0)
-        self.assertEqual(verifier.matching, 0)
-        self.assertEqual(verifier.non_matching, 0)
-       
-        
-    
 if __name__ == '__main__':
     unittest.main()
