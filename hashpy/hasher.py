@@ -81,9 +81,9 @@ class Hasher:
     
     def __init__(self, *algnames, **kwargs):
         if not algnames:
-            self.algorithms = ALG_DEFAULTS
+            self._algorithms = ALG_DEFAULTS
         else:
-            self.algorithms = None
+            self._algorithms = set()
             for i in algnames:
                 self.add_algorithm(i)
         self.hashed = 0
@@ -91,11 +91,13 @@ class Hasher:
         self.files = 0
         self.read_bytes = 0
         
+    @property
+    def algorithms(self):
+        return self._algorithms
+    
     def add_algorithm(self, algname):
         """Updates self.algorithms with algorithm"""
-        if not self.algorithms:
-            self.algorithms = set()
-        self.algorithms.add(normalize(algname))
+        self._algorithms.add(normalize(algname))
         
     def remove_algorithm(self, algname):
         """Removes algorithm from self.algorithms, if it is the only algorithm raises a ValueError"""
@@ -103,7 +105,7 @@ class Hasher:
         if name in self.algorithms:
             if len(self.algorithms) > 1:
                 try:
-                    self.algorithms.remove(name)
+                    self._algorithms.remove(name)
                 except KeyError:
                     raise ValueError("{} is not in algorithms".format(name))
             else:
